@@ -37,3 +37,33 @@ extern void printmatches(file_t * restrict files)
 
   return;
 }
+
+extern void jsonoutput(file_t * restrict files)
+{
+  file_t * restrict tmpfile;
+
+  fwprint(stdout, "[", 1);
+  while (files != NULL) {
+    if (ISFLAG(files->flags, F_HAS_DUPES)) {
+      fwprint(stdout, "[", 0);
+      if (!ISFLAG(flags, F_OMITFIRST)) {
+        fwprint(stdout, "\"", 0);
+        fwprint(stdout, files->d_name, 0);
+        fwprint(stdout, "\"", 0);
+      }
+      tmpfile = files->duplicates;
+      while (tmpfile != NULL) {
+        fwprint(stdout, ",\"", 0);
+        fwprint(stdout, tmpfile->d_name, 0);
+        fwprint(stdout, "\"", 0);
+        tmpfile = tmpfile->duplicates;
+      }
+      if (files->next != NULL) fwprint(stdout, "]", 1);
+    }
+
+    files = files->next;
+  }
+  fwprint(stdout, "]", 1);
+
+  return;
+}

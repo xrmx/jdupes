@@ -1414,6 +1414,7 @@ static inline void help_text(void)
 #endif
   printf(" -i --reverse     \treverse (invert) the match sort order\n");
   printf(" -I --isolate     \tfiles in the same specified directory won't match\n");
+  printf(" -j --json        \tdump output in machine readable json format\n");
 #ifndef NO_SYMLINKS
   printf(" -l --linksoft    \tmake relative symlinks for duplicates w/o prompting\n");
 #endif
@@ -1494,6 +1495,7 @@ int main(int argc, char **argv)
 #endif
     { "reverse", 0, 0, 'i' },
     { "isolate", 0, 0, 'I' },
+    { "json", 0, 0, 'j' },
     { "summarize", 0, 0, 'm'},
     { "summary", 0, 0, 'm' },
     { "noempty", 0, 0, 'n' },
@@ -1599,6 +1601,9 @@ int main(int argc, char **argv)
       break;
     case 'I':
       SETFLAG(flags, F_ISOLATE);
+      break;
+    case 'j':
+      SETFLAG(flags, F_JSONOUTPUT);
       break;
     case 'm':
       SETFLAG(flags, F_SUMMARIZEMATCHES);
@@ -1790,7 +1795,7 @@ int main(int argc, char **argv)
       string_malloc_destroy();
       exit(EXIT_FAILURE);
   }
-  if (pm == 0) SETFLAG(flags, F_PRINTMATCHES);
+  if (pm == 0 && !ISFLAG(flags, F_JSONOUTPUT)) SETFLAG(flags, F_PRINTMATCHES);
 
   if (ISFLAG(flags, F_RECURSEAFTER)) {
     firstrecurse = nonoptafter("--recurse:", argc, oldargv, argv);
@@ -1945,6 +1950,7 @@ skip_file_scan:
   if (ISFLAG(flags, F_DEDUPEFILES)) dedupefiles(files);
 #endif /* ENABLE_BTRFS */
   if (ISFLAG(flags, F_PRINTMATCHES)) printmatches(files);
+  if (ISFLAG(flags, F_JSONOUTPUT)) jsonoutput(files);
 
   string_malloc_destroy();
 
